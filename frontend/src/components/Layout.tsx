@@ -94,14 +94,14 @@ function roleLabel(role: string): string {
 function getNavItems(role: string) {
   const items = [
     { href: "/dashboard", label: "ダッシュボード" },
+    { href: "/attendance", label: "勤怠一覧" },
   ];
 
   if (role === "MANAGER" || role === "HR") {
-    items.push({ href: "/dashboard", label: "承認" });
+    items.push({ href: "/approval", label: "承認" });
   }
   if (role === "HR") {
-    items.push({ href: "/dashboard", label: "社員管理" });
-    items.push({ href: "/dashboard", label: "組織管理" });
+    items.push({ href: "/employees", label: "社員管理" });
   }
 
   return items;

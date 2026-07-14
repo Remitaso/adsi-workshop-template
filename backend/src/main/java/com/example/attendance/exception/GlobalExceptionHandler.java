@@ -28,6 +28,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("DUPLICATE", ex.getMessage()));
     }
 
+    @ExceptionHandler(InvalidOperationException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOperation(InvalidOperationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of("INVALID_OPERATION", ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         List<ErrorResponse.FieldError> details = ex.getBindingResult().getFieldErrors().stream()
