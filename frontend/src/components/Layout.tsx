@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { withBasePath } from "@/lib/api-client";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -64,12 +64,12 @@ export default function Layout({ children }: LayoutProps) {
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.href}>
-                <a
-                  href={withBasePath(item.href)}
+                <Link
+                  href={item.href}
                   className="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100"
                 >
                   {item.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -95,15 +95,15 @@ function roleLabel(role: string): string {
 function getNavItems(role: string) {
   const items = [
     { href: "/dashboard", label: "ダッシュボード" },
+    { href: "/attendance", label: "勤怠一覧" },
     { href: "/leaves", label: "休暇" },
   ];
 
   if (role === "MANAGER" || role === "HR") {
-    items.push({ href: "/approval/leaves", label: "承認" });
+    items.push({ href: "/approval", label: "承認" });
   }
   if (role === "HR") {
-    items.push({ href: "/dashboard", label: "社員管理" });
-    items.push({ href: "/dashboard", label: "組織管理" });
+    items.push({ href: "/employees", label: "社員管理" });
   }
 
   return items;
