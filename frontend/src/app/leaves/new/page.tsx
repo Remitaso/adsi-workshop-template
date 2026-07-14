@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/Layout";
-import { apiClient, ApiClientError, withBasePath } from "@/lib/api-client";
+import { apiClient, ApiClientError } from "@/lib/api-client";
 import {
   LeaveType,
   LeaveBalanceResponse,
@@ -67,7 +67,7 @@ function NewLeaveContent() {
         reason,
       };
       await apiClient.post("/leaves", body);
-      router.push(withBasePath("/leaves"));
+      router.push("/leaves");
     } catch (e) {
       if (e instanceof ApiClientError) {
         setError(e.error.message);
@@ -166,7 +166,7 @@ function NewLeaveContent() {
         <div className="flex gap-3 pt-2">
           <button
             type="button"
-            onClick={() => router.push(withBasePath("/leaves"))}
+            onClick={() => router.push("/leaves")}
             className="flex-1 border rounded px-4 py-2 hover:bg-gray-50"
           >
             キャンセル
