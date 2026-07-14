@@ -67,15 +67,20 @@ public class AttendanceController {
 
     @PutMapping("/entries/{entryId}")
     public ResponseEntity<TimeEntryResponse> modifyEntry(
+            @AuthenticationPrincipal UserDetails user,
             @PathVariable Long entryId,
             @Valid @RequestBody ModifyEntryRequest request) {
-        var response = attendanceService.modifyEntry(entryId, request);
+        Long employeeId = employeeIdResolver.resolve(user);
+        var response = attendanceService.modifyEntry(employeeId, entryId, request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/records/{recordId}/submit")
-    public ResponseEntity<Void> submitForApproval(@PathVariable Long recordId) {
-        attendanceService.submitForApproval(recordId);
+    public ResponseEntity<Void> submitForApproval(
+            @AuthenticationPrincipal UserDetails user,
+            @PathVariable Long recordId) {
+        Long employeeId = employeeIdResolver.resolve(user);
+        attendanceService.submitForApproval(employeeId, recordId);
         return ResponseEntity.ok().build();
     }
 }

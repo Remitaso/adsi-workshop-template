@@ -133,7 +133,8 @@ class AttendanceControllerTest {
         var request = new ModifyEntryRequest(
                 LocalDateTime.of(2026, 7, 14, 9, 15),
                 LocalDateTime.of(2026, 7, 14, 18, 30));
-        when(attendanceService.modifyEntry(eq(1L), any())).thenReturn(
+        when(employeeIdResolver.resolve(any())).thenReturn(1L);
+        when(attendanceService.modifyEntry(eq(1L), eq(1L), any())).thenReturn(
                 new TimeEntryResponse(1L, 10L,
                         LocalDateTime.of(2026, 7, 14, 9, 15),
                         LocalDateTime.of(2026, 7, 14, 18, 30)));
@@ -151,7 +152,8 @@ class AttendanceControllerTest {
     void modifyEntry_approved_returns409() throws Exception {
         var request = new ModifyEntryRequest(
                 LocalDateTime.of(2026, 7, 14, 9, 15), null);
-        when(attendanceService.modifyEntry(eq(1L), any()))
+        when(employeeIdResolver.resolve(any())).thenReturn(1L);
+        when(attendanceService.modifyEntry(eq(1L), eq(1L), any()))
                 .thenThrow(new InvalidOperationException("承認済みの記録は修正できません。"));
 
         mockMvc.perform(put("/api/v1/attendance/entries/1")
@@ -164,6 +166,7 @@ class AttendanceControllerTest {
     @DisplayName("POST /records/{id}/submit: 200")
     @WithMockUser(username = "tanaka@example.com")
     void submitForApproval_returns200() throws Exception {
+        when(employeeIdResolver.resolve(any())).thenReturn(1L);
         mockMvc.perform(post("/api/v1/attendance/records/10/submit"))
                 .andExpect(status().isOk());
     }

@@ -135,15 +135,23 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public TimeEntryResponse modifyEntry(Long entryId, ModifyEntryRequest request) {
+    public TimeEntryResponse modifyEntry(Long employeeId, Long entryId, ModifyEntryRequest request) {
         TimeEntry entry = timeEntryRepository.findById(entryId)
                 .orElseThrow(() -> new ResourceNotFoundException("打刻エントリが見つかりません: " + entryId));
 
         TimeRecord record = timeRecordRepository.findById(entry.getTimeRecordId())
                 .orElseThrow(() -> new ResourceNotFoundException("勤怠記録が見つかりません"));
 
+        if (!record.getEmployeeId().equals(employeeId)) {
+            throw new InvalidOperationException("他のユーザーの打刻記録は修正できません。");
+        }
+
         if (record.getStatus() != RecordStatus.DRAFT) {
             throw new InvalidOperationException("承認済みまたは申請中の記録は修正できません。");
+        }
+
+        if (request.clockOut() != null && request.clockOut().isBefore(request.clockIn())) {
+            throw new InvalidOperationException("退勤時刻は出勤時刻より後でなければなりません。");
         }
 
         entry.setClockIn(request.clockIn());
@@ -155,9 +163,13 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public void submitForApproval(Long timeRecordId) {
+    public void submitForApproval(Long employeeId, Long timeRecordId) {
         TimeRecord record = timeRecordRepository.findById(timeRecordId)
                 .orElseThrow(() -> new ResourceNotFoundException("勤怠記録が見つかりません: " + timeRecordId));
+
+        if (!record.getEmployeeId().equals(employeeId)) {
+            throw new InvalidOperationException("他のユーザーの勤怠記録は申請できません。");
+        }
 
         if (record.getStatus() != RecordStatus.DRAFT) {
             throw new InvalidOperationException("DRAFT状態の記録のみ申請できます。");

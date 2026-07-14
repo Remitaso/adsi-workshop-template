@@ -17,9 +17,9 @@ public interface AttendanceService {
 
     MonthlyRecordsResponse getMonthlyRecords(Long employeeId, YearMonth yearMonth);
 
-    TimeEntryResponse modifyEntry(Long entryId, ModifyEntryRequest request);
+    TimeEntryResponse modifyEntry(Long employeeId, Long entryId, ModifyEntryRequest request);
 
-    void submitForApproval(Long timeRecordId);
+    void submitForApproval(Long employeeId, Long timeRecordId);
 
     void approve(Long timeRecordId, Long approverId);
 }

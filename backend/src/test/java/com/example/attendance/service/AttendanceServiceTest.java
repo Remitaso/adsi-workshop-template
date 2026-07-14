@@ -195,7 +195,7 @@ class AttendanceServiceTest {
                     .clockIn(LocalDateTime.of(2026, 7, 14, 9, 0))
                     .clockOut(LocalDateTime.of(2026, 7, 14, 17, 0))
                     .build();
-            var record = TimeRecord.builder().id(10L).status(RecordStatus.DRAFT).build();
+            var record = TimeRecord.builder().id(10L).employeeId(1L).status(RecordStatus.DRAFT).build();
 
             when(timeEntryRepository.findById(1L)).thenReturn(Optional.of(entry));
             when(timeRecordRepository.findById(10L)).thenReturn(Optional.of(record));
@@ -207,19 +207,19 @@ class AttendanceServiceTest {
                     LocalDateTime.of(2026, 7, 14, 18, 30)
             );
 
-            var result = service.modifyEntry(1L, request);
+            var result = service.modifyEntry(1L, 1L, request);
 
             assertThat(result.clockIn()).isEqualTo(LocalDateTime.of(2026, 7, 14, 9, 15));
             assertThat(result.clockOut()).isEqualTo(LocalDateTime.of(2026, 7, 14, 18, 30));
         }
 
         @Test
-        @DisplayName("APPROVED状態: 409エラー")
-        void modifyEntry_approvedStatus_throwsConflict() {
+        @DisplayName("他人の記録を修正: エラー")
+        void modifyEntry_otherUser_throwsException() {
             var entry = TimeEntry.builder().id(1L).timeRecordId(10L)
                     .clockIn(LocalDateTime.of(2026, 7, 14, 9, 0))
                     .build();
-            var record = TimeRecord.builder().id(10L).status(RecordStatus.APPROVED).build();
+            var record = TimeRecord.builder().id(10L).employeeId(2L).status(RecordStatus.DRAFT).build();
 
             when(timeEntryRepository.findById(1L)).thenReturn(Optional.of(entry));
             when(timeRecordRepository.findById(10L)).thenReturn(Optional.of(record));
@@ -228,7 +228,46 @@ class AttendanceServiceTest {
                     LocalDateTime.of(2026, 7, 14, 9, 15), null
             );
 
-            assertThatThrownBy(() -> service.modifyEntry(1L, request))
+            assertThatThrownBy(() -> service.modifyEntry(1L, 1L, request))
+                    .isInstanceOf(InvalidOperationException.class);
+        }
+
+        @Test
+        @DisplayName("APPROVED状態: 409エラー")
+        void modifyEntry_approvedStatus_throwsConflict() {
+            var entry = TimeEntry.builder().id(1L).timeRecordId(10L)
+                    .clockIn(LocalDateTime.of(2026, 7, 14, 9, 0))
+                    .build();
+            var record = TimeRecord.builder().id(10L).employeeId(1L).status(RecordStatus.APPROVED).build();
+
+            when(timeEntryRepository.findById(1L)).thenReturn(Optional.of(entry));
+            when(timeRecordRepository.findById(10L)).thenReturn(Optional.of(record));
+
+            var request = new ModifyEntryRequest(
+                    LocalDateTime.of(2026, 7, 14, 9, 15), null
+            );
+
+            assertThatThrownBy(() -> service.modifyEntry(1L, 1L, request))
+                    .isInstanceOf(InvalidOperationException.class);
+        }
+
+        @Test
+        @DisplayName("clockOutがclockInより前: エラー")
+        void modifyEntry_clockOutBeforeClockIn_throwsException() {
+            var entry = TimeEntry.builder().id(1L).timeRecordId(10L)
+                    .clockIn(LocalDateTime.of(2026, 7, 14, 9, 0))
+                    .build();
+            var record = TimeRecord.builder().id(10L).employeeId(1L).status(RecordStatus.DRAFT).build();
+
+            when(timeEntryRepository.findById(1L)).thenReturn(Optional.of(entry));
+            when(timeRecordRepository.findById(10L)).thenReturn(Optional.of(record));
+
+            var request = new ModifyEntryRequest(
+                    LocalDateTime.of(2026, 7, 14, 18, 0),
+                    LocalDateTime.of(2026, 7, 14, 9, 0)
+            );
+
+            assertThatThrownBy(() -> service.modifyEntry(1L, 1L, request))
                     .isInstanceOf(InvalidOperationException.class);
         }
     }
@@ -240,23 +279,33 @@ class AttendanceServiceTest {
         @Test
         @DisplayName("DRAFT→SUBMITTED")
         void submit_draft_becomesSubmitted() {
-            var record = TimeRecord.builder().id(10L).status(RecordStatus.DRAFT).build();
+            var record = TimeRecord.builder().id(10L).employeeId(1L).status(RecordStatus.DRAFT).build();
             when(timeRecordRepository.findById(10L)).thenReturn(Optional.of(record));
             when(timeRecordRepository.save(any(TimeRecord.class)))
                     .thenAnswer(inv -> inv.getArgument(0));
 
-            service.submitForApproval(10L);
+            service.submitForApproval(1L, 10L);
 
             verify(timeRecordRepository).save(any(TimeRecord.class));
         }
 
         @Test
-        @DisplayName("APPROVED状態で再提出: エラー")
-        void submit_approved_throwsException() {
-            var record = TimeRecord.builder().id(10L).status(RecordStatus.APPROVED).build();
+        @DisplayName("他人のレコードを申請: エラー")
+        void submit_otherUser_throwsException() {
+            var record = TimeRecord.builder().id(10L).employeeId(2L).status(RecordStatus.DRAFT).build();
             when(timeRecordRepository.findById(10L)).thenReturn(Optional.of(record));
 
-            assertThatThrownBy(() -> service.submitForApproval(10L))
+            assertThatThrownBy(() -> service.submitForApproval(1L, 10L))
+                    .isInstanceOf(InvalidOperationException.class);
+        }
+
+        @Test
+        @DisplayName("APPROVED状態で再提出: エラー")
+        void submit_approved_throwsException() {
+            var record = TimeRecord.builder().id(10L).employeeId(1L).status(RecordStatus.APPROVED).build();
+            when(timeRecordRepository.findById(10L)).thenReturn(Optional.of(record));
+
+            assertThatThrownBy(() -> service.submitForApproval(1L, 10L))
                     .isInstanceOf(InvalidOperationException.class);
         }
     }

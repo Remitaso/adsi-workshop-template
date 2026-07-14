@@ -10,6 +10,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.format.DateTimeParseException;
+
 import java.util.List;
 
 @Slf4j
@@ -32,6 +34,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidOperation(InvalidOperationException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of("INVALID_OPERATION", ex.getMessage()));
+    }
+
+    @ExceptionHandler(DateTimeParseException.class)
+    public ResponseEntity<ErrorResponse> handleDateTimeParse(DateTimeParseException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("VALIDATION_ERROR", "日付形式が正しくありません: " + ex.getParsedString()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
