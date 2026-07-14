@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient } from "@/lib/api-client";
+import { AuthProvider } from "@/contexts/AuthContext";
+import Layout from "@/components/Layout";
+import { apiClient, withBasePath } from "@/lib/api-client";
 import {
   LeaveResponse,
   LeaveBalanceResponse,
@@ -10,7 +12,17 @@ import {
   STATUS_LABELS,
 } from "@/lib/leave-types";
 
-export default function LeavesPage() {
+export default function LeavesPageWrapper() {
+  return (
+    <AuthProvider>
+      <Layout>
+        <LeavesContent />
+      </Layout>
+    </AuthProvider>
+  );
+}
+
+function LeavesContent() {
   const router = useRouter();
   const [leaves, setLeaves] = useState<LeaveResponse[]>([]);
   const [balance, setBalance] = useState<LeaveBalanceResponse | null>(null);
@@ -59,7 +71,7 @@ export default function LeavesPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">休暇管理</h1>
         <button
-          onClick={() => router.push("/leaves/new")}
+          onClick={() => router.push(withBasePath("/leaves/new"))}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
           休暇を申請する

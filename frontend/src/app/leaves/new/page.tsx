@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient, ApiClientError } from "@/lib/api-client";
+import { AuthProvider } from "@/contexts/AuthContext";
+import Layout from "@/components/Layout";
+import { apiClient, ApiClientError, withBasePath } from "@/lib/api-client";
 import {
   LeaveType,
   LeaveBalanceResponse,
@@ -10,7 +12,17 @@ import {
   LEAVE_TYPE_LABELS,
 } from "@/lib/leave-types";
 
-export default function NewLeavePage() {
+export default function NewLeavePageWrapper() {
+  return (
+    <AuthProvider>
+      <Layout>
+        <NewLeaveContent />
+      </Layout>
+    </AuthProvider>
+  );
+}
+
+function NewLeaveContent() {
   const router = useRouter();
   const [leaveType, setLeaveType] = useState<LeaveType>("PAID");
   const [startDate, setStartDate] = useState("");
@@ -55,7 +67,7 @@ export default function NewLeavePage() {
         reason,
       };
       await apiClient.post("/leaves", body);
-      router.push("/leaves");
+      router.push(withBasePath("/leaves"));
     } catch (e) {
       if (e instanceof ApiClientError) {
         setError(e.error.message);
@@ -154,7 +166,7 @@ export default function NewLeavePage() {
         <div className="flex gap-3 pt-2">
           <button
             type="button"
-            onClick={() => router.push("/leaves")}
+            onClick={() => router.push(withBasePath("/leaves"))}
             className="flex-1 border rounded px-4 py-2 hover:bg-gray-50"
           >
             キャンセル
