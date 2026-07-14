@@ -140,7 +140,7 @@ class LeaveControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/approval/leave-requests/{id}/approve: 承認 → 200")
-    @WithMockUser(username = "suzuki@example.com")
+    @WithMockUser(username = "suzuki@example.com", authorities = "MANAGER")
     void approveLeave_asManager_returns200() throws Exception {
         LeaveRequest request = new LeaveRequest(1L, LeaveType.PAID,
                 LocalDate.of(2026, 7, 20), LocalDate.of(2026, 7, 20), "私用");
@@ -156,7 +156,7 @@ class LeaveControllerTest {
 
     @Test
     @DisplayName("POST /api/v1/approval/leave-requests/{id}/reject: 却下 → 200")
-    @WithMockUser(username = "suzuki@example.com")
+    @WithMockUser(username = "suzuki@example.com", authorities = "MANAGER")
     void rejectLeave_asManager_returns200() throws Exception {
         LeaveRequest request = new LeaveRequest(1L, LeaveType.PAID,
                 LocalDate.of(2026, 7, 20), LocalDate.of(2026, 7, 20), "私用");
