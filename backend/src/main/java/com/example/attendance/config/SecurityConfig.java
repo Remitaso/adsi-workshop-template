@@ -33,6 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/employees/**").hasAuthority("HR")
                         .requestMatchers("/api/v1/organizations/**").hasAuthority("HR")
+                        .requestMatchers("/api/v1/approval/**").hasAnyAuthority("MANAGER", "HR")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
