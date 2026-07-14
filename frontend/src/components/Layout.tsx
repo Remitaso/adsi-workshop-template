@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -63,12 +64,12 @@ export default function Layout({ children }: LayoutProps) {
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.href}>
-                <a
+                <Link
                   href={item.href}
                   className="block px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-100"
                 >
                   {item.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
